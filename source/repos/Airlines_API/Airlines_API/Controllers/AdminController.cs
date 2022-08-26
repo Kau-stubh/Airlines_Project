@@ -108,6 +108,78 @@ namespace Airlines_API.Controllers
                 return BadRequest(ex.ToString());
             }
         }
+===========================================================================================================
+
+using Airlines_API.Models;
+using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace Airlines_API.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class AdminController : Controller
+    {
+
+         public AppDbContext _context { get; }
+         public AdminController(AppDbContext context)
+         {
+                _context = context;
+          }
+
+
+        //admin login
+        [HttpPost]
+        [Route("login")]
+        public ActionResult Login([FromBody] Login u)
+        {
+            try
+            {
+
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var admin = _context.AdminLoginDetails.FirstOrDefault(x => x.Admin_Username == u.Email && x.Admin_password == u.Password);
+
+                if (admin == null)
+                {
+                    return BadRequest("Invalid Credentials");
+
+                }
+                return Ok("Valid");
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.ToString());
+            }
+        }
+
+
+
+
+
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     }
 }
