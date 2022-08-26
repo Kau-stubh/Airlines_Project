@@ -182,3 +182,89 @@ namespace Airlines_API.Controllers
         }
     }
 }
+===================================================================================================================
+using Airlines_API.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
+
+namespace Airlines_API.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class UserController : ControllerBase
+    {
+        public AppDbContext db { get; set; }
+
+        public UserController(AppDbContext _db)
+        {
+            db = _db;
+        }
+
+        //login user
+        [HttpPost]
+        [Route("login")]
+        public ActionResult UserLogin(Login u)
+        {
+            try
+            {
+
+                var user = db.UserDetails.FirstOrDefault(x => x.Email == u.Email && x.Password == u.Password);
+
+                if (!ModelState.IsValid)
+                { 
+                    return BadRequest(ModelState);
+                }
+                if (user == null)
+                {
+                    return BadRequest("Invalid Credentials");
+                }
+                return Ok("Valid");
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(ex.ToString());
+
+            }
+        }
+
+        [HttpPost]
+        [Route("changepassword")]
+        public ActionResult ChangePassword([FromBody] ChangePasswordModel model)
+        {
+
+            try
+            {
+                User u = db.Users.FirstOrDefault(user => user.email == model.email && user.password == model.old_password);
+                if (u == null)
+                {
+                    return BadRequest("Invalid User id");
+                }
+                var res = db.Database.ExecuteSqlInterpolated($"exec dbo.SP_Change_Password {u.user_id}, {model.new_password}");
+                if (res != 0)
+                {
+                    return Ok("Password Updated Successfully");
+                }
+                return StatusCode(StatusCodes.Status500InternalServerError, "Failed");
+
+
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.ToString());
+            }
+        }
+
+
+
+
+
+
+    }
+}
+
+
+
