@@ -73,6 +73,36 @@ namespace Airlines_API.Controllers
 
         }
         
+         [HttpPost]
+        [Route("changepassword")]
+        public ActionResult ChangePassword([FromBody] ChangePasswordModel model)
+        {
+
+            try
+            {
+                User u = db.Users.FirstOrDefault(user => user.email == model.email && user.password == model.old_password);
+                if (u == null)
+                {
+                    return BadRequest("Invalid User id");
+                }
+                var res = db.Database.ExecuteSqlInterpolated($"exec dbo.SP_Change_Password {u.user_id}, {model.new_password}");
+                if (res != 0)
+                {
+                    return Ok("Password Updated Successfully");
+                }
+                return StatusCode(StatusCodes.Status500InternalServerError, "Failed");
+
+
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.ToString());
+            }
+        }
+        
+        
+       using System.ComponentModel.DataAnnotations;
+    
         [HttpPost("flight/search")]
         public ActionResult<IEnumerable<SearchData>> SearchFlight([FromBody] SearchQuery query)
 
